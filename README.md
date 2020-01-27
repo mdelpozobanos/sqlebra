@@ -1,7 +1,7 @@
 SQLebra
 =======
 
-SQLebra is an Agnostic SQL library wrapper supporting python data types. 
+SQLebra is an agnostic SQL library wrapper supporting python data types. 
 It serves as an interface between python variables and an SQL database.
 
 Database structure
