@@ -1,12 +1,13 @@
-from sqlebra.dtype import NoneType_
-from sqlebra.dtype import int_
-from sqlebra.dtype import float_
-from sqlebra.dtype import bool_
-from sqlebra.dtype import str_
-from sqlebra.dtype import list_
-from sqlebra.dtype import tuple_
-from sqlebra.dtype import dict_
-from sqlebra.dtype import ndarray_
+from sqlebra.python import NoneType_
+from sqlebra.python import int_
+from sqlebra.python import float_
+from sqlebra.python import bool_
+from sqlebra.python import str_
+from sqlebra.python import list_
+from sqlebra.python import tuple_
+from sqlebra.python import dict_
+from sqlebra.numpy import ndarray_
+
 # from sqlebra.dtype.function import SQLfunction
 
 # List of SQLebra objects

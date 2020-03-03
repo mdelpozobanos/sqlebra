@@ -36,12 +36,12 @@ class MySQLDB(BaseDB):
         self._c = self._conx.cursor()
 
         # Check if database exists
-        res = self.execute("show databases like '{}'".format(self.file))
+        res = self.execute("show databases like '{}'".format(self.name), fetch=True)
         if len(res) == 0:  # Create database
-            self._c.execute("CREATE DATABASE {}".format(self.file))
+            self._c.execute("CREATE DATABASE {}".format(self.name))
 
         # Use database
-        self._c.execute("USE {}".format(self.file))
+        self._c.execute("USE {}".format(self.name))
 
         return self
 
@@ -57,12 +57,16 @@ class MySQLDB(BaseDB):
     # Simplified SQL interface
     # ---------------------------------------------------------
 
-    def execute(self, query, pars=False):
+    def _tab_name(self, name):
+        return '{}.{}'.format(self.name, name)
+
+    def execute(self, query, pars=False, fetch=False):
         """
         Execute an sql query.
 
         :param query: (str) SQL query
         :param pars: (list) Parameters required by the SQL query.
+        :param fetch: (bool) If True, return result of execute
         :return: Result of the SQL query.
         """
         # Addapt to MySql
@@ -71,13 +75,20 @@ class MySQLDB(BaseDB):
         if 'key' in query:  # key is a reserved word
             query = query.replace('key', "`key`")
         if pars:
-            self._c.execute(query, pars)
+            if isinstance(pars[0], tuple):  # Unzip parameters
+                self._c.executemany(query, [p for p in zip(*pars)])
+            else:
+                self._c.execute(query, pars)
         else:
             self._c.execute(query)
-        if self._c.description is None:
-            return []
-        else:
-            return self._c.fetchall()
+        if fetch:
+            if self._c.description is None:
+                return []
+            else:
+                return self._c.fetchall()
+        else:  # TODO: When MySQL allows to discard unfetched results
+            if self._c.description is not None:
+                self._c.fetchall()
 
     def commit(self):
         self._conx.commit()
@@ -87,12 +98,13 @@ class MySQLDB(BaseDB):
         self._conx.rollback()
         return self
 
-    def exists(self):
+    def _exists_(self, tab):
         # Check if sqlebra table exists
+        tabs = tab.split('.')
         return self.execute(
             "select count(*) from information_schema.tables where table_schema='{}' and table_name='{}'".format(
-                self.file, self.name
-            ))[0][0] == 1
+                tabs[0], tabs[1]
+            ), fetch=True)[0][0] == 1
 
     def rm(self):
         """Remove database from system: i.e. delete database schema from server"""

@@ -1,4 +1,5 @@
 from ..object.single import Single
+from .. import exceptions as ex
 
 
 class NoneType_(Single):
@@ -13,7 +14,7 @@ class NoneType_(Single):
 
     @py.setter
     def py(self, x):
-        raise TypeError('{} cannot be set'.format(type(self)))
+        raise ex.TypeError('{} cannot be set'.format(type(self)))
 
     @classmethod
     def value2row(cls, x):
@@ -24,7 +25,7 @@ class NoneType_(Single):
         :return: (dict) With (key, value) = (column, value) corresponding to a row in table [values] within the SQL
         database containing the specified value.
         """
-        return {'class': NoneType_.pyclass.__name__}
+        return {'type': NoneType_.pyclass.__name__}
 
     @classmethod
     def row2value(cls, row):

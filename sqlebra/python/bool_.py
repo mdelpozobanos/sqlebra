@@ -1,22 +1,13 @@
 from ..object.single import Single
+from ..object.numeric import Numeric
 import builtins
 
 
-class bool_(Single):
+class bool_(Single, Numeric):
     """SQLobject of type bool"""
 
     pyclass = builtins.bool
     col_val = 'bool_val'
-
-    @property
-    def py(self):
-        return super(bool_, self).py == 1
-
-    @py.setter
-    def py(self, x):
-        if not isinstance(x, self.pyclass):
-            x = self.pyclass(x)
-        self.db.update(set={self.col_val: x}, where={'id': self.id})
 
     @classmethod
     def row2value(cls, row):

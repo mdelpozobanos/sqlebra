@@ -31,5 +31,9 @@ pip-delete-this-directory.txt
 nosetests.xml
 coverage.xml
 
+# Databases
+*.db
+*.db.pt
+
 # PyCharm IDE
 .idea/

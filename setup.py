@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SQLebra", # Replace with your own username
-    version="0.1",
+    version="0.1.2",
     author="Marcos del Pozo Banos",
     author_email="mdelpozobanos@gmail.com",
     description="Agnostic SQL library wrapper supporting python data types",
@@ -23,4 +23,5 @@ setuptools.setup(
 )
 
 # Compile: python setup.py bdist_wheel
-# Install: python -m pip install dist/SQLebra-0.1-py3-none-any.whl
+# Install: python -m pip install dist/SQLebra-0.1.2-py3-none-any.whl
+# Install: python -m pip install --upgrade --force-reinstall dist/SQLebra-0.1.2-py3-none-any.whl

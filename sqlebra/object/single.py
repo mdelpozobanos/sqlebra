@@ -1,13 +1,12 @@
-from .object import Object
-from .. import exceptions as ex
+from .object_ import object_
 from .. import variables as var
+from .. import exceptions as ex
 
 
-class Single(Object):
+class Single(object_):
 
     # The following variables are defined by the inheriting class.
     col_val = False  # Name of the column containing the value (int_val, txt_val, etc)
-    pyclass = False  # Python class
 
     @property
     def py(self):
@@ -15,15 +14,41 @@ class Single(Object):
 
     @py.setter
     def py(self, x):
-        if not isinstance(x, self.pyclass):
-            raise TypeError('SQLobject {} expects a value of type {}. Given type {} instead'.format(
-                type(self), self.pyclass, type(x)))
-        # Direct interfacing with the SQL database to maximize speed
-        self.db.update(set={self.col_val: x},
-                       where={'id': self.id, 'name': self.name, 'key': self.key, 'ind': self.ind})
+        """
+        A single object can be assigned in many ways:
 
-    def delete(self):
-        self.db.delete(where={'id': self.id, 'name': self.name, 'key': self.key, 'ind': self.ind})
+        If x is of type Object:
+        1. If the Object is of the same class as self and is stored in the same SQL database, point self to the
+            passed SQL-object. If self was the only reference to the previous SQL-object, delete it.
+        2. Otherwise, extract the actual value from Object (i.e. Object.py) and continue with the python variable (
+            continue reading).
+
+        If x is a python variable:
+        1. If self is the only reference to the current SQL-object, overwrite its value. This is equivalent to
+            recycling the SQL-object's id.
+        2. Otherwise, create a new SQL-object with the new value and point self (and its reference) to it.
+        """
+        if isinstance(x, object_):  # Assigning an SQL object...
+            if x.pyclass != self.pyclass:  # ... of the same class
+                raise ex.TypeError("Can't assign {} to {} object".format(x.__class__.__name__, self.sqlclass))
+            if self.db == x.db:  # ... on the same SQL database
+                # If this is the only reference to the current SQL object, delete it
+                self.delete(del_ref=False)
+                self.id = x.id
+                return
+            else:  # ... of a different class or on a different SQL database
+                x = x.py
+
+        # Check type
+        if not isinstance(x, self.pyclass):
+            raise ex.TypeError("Can't assign {} to {} object".format(x.__class__.__name__, self.sqlclass))
+
+        # If this was the object's only reference (i.e. num_ref==1), update the value (easiest route)
+        if self.num_ref == 1:
+            self.db.update(self.db.tab_objs, set={self.col_val: x}, where={'id': self.id})
+        else:  # 2. Attach reference to a new id containing the new value
+            self.id = self.db.free_id()[0]
+            self.db[self.id] = x
 
     @classmethod
     def value2row(cls, x):
@@ -32,7 +57,7 @@ class Single(Object):
         :return: (dict) With (key, value) = (column, value) corresponding to a row in the database
             containing the specified value.
         """
-        return {'class': cls.pyclass.__name__, cls.col_val: x}
+        return {'type': cls.pyclass.__name__, cls.col_val: x}
 
     @classmethod
     def row2value(cls, row):
@@ -43,3 +68,11 @@ class Single(Object):
         :return: Python value in the row
         """
         return row[var.COL_DICT[cls.col_val]]
+
+    def __bool__(self):
+        py = self.py
+        return bool(py)
+        if py:
+            return py
+        else:
+            return False

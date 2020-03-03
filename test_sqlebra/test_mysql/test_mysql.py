@@ -17,6 +17,10 @@ class Test1DBInit(unittest.TestCase):
     def test_1_open(self):
         DB(self.file, mode='w').open()
 
+    def test_1_reopen(self):
+        DB(self.file, mode='w').open()
+        DB(self.file, mode='w').open()
+
     def test_2_connect(self):
         # connect is called within __init__
         dbfile = DB(self.file, mode='w').connect()
@@ -86,7 +90,7 @@ class TestDBInterface(unittest.TestCase):
                          'Value not updated')
 
     def test_free_id(self):
-        self.assertEqual(0, self.dbfile.free_id(True))
+        self.assertEqual(0, self.dbfile.free_id())
 
     def test_free_name(self):
         name = self.dbfile.free_name()

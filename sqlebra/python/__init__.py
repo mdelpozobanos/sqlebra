@@ -6,4 +6,3 @@ from .str_ import str_
 from .list_ import list_
 from .dict_ import dict_
 from .tuple_ import tuple_
-from .ndarray_ import ndarray_

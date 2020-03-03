@@ -1,8 +1,8 @@
 import unittest
 import os
 from sqlebra.sqlite import SQLiteDB as DB
-from sqlebra.dtype import dict_ as SQLdict
-from sqlebra.dtype import int_ as SQLint
+from sqlebra.python import dict_ as SQLdict
+from sqlebra.python import int_ as SQLint
 from sqlebra import exceptions as ex
 
 FILE = 'unittest.sqlebra.db'

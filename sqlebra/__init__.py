@@ -44,3 +44,5 @@ with SQLiteDB('filename.db') as db:
     my_dict = db['my_dict'].py
 
 """
+
+__version__ = '1.1.2'

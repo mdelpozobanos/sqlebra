@@ -42,19 +42,30 @@ class SQLiteDB(BaseDB):
     # Simplified SQL interface
     # ---------------------------------------------------------
 
-    def execute(self, query, pars=False):
+    def _tab_name(self, name):
+        return '{}_{}'.format(self.name, name)
+
+    def execute(self, query, pars=False, fetch=False):
         """
         Execute an sql query.
 
         :param query: (str) SQL query
         :param pars: (list) Parameters required by the SQL query.
+        :param fetch: (bool) If True, return result of execute
         :return: Result of the SQL query.
         """
         # query = query.replace('[db]', self.name)
         if pars:
-            return self._c.execute(query, pars).fetchall()
-        else:
+            if isinstance(pars[0], tuple):  # Unzip parameters
+                c = self._c.executemany(query, [p for p in zip(*pars)])
+            else:
+                c = self._c.execute(query, pars)
+            if fetch:
+                return c.fetchall()
+        elif fetch:
             return self._c.execute(query).fetchall()
+        else:
+            self._c.execute(query)
 
     def commit(self):
         self._conx.commit()
@@ -64,9 +75,9 @@ class SQLiteDB(BaseDB):
         self._conx.rollback()
         return self
 
-    def exists(self):
-        return self.execute(
-            "select count(*) from sqlite_master where type='table' and name='{}'".format(self.name))[0][0] == 1
+    def _exists_(self, tab):
+        return self.execute("select count(*) from sqlite_master where type='table' and name='{}'".format(tab),
+                            fetch=True)[0][0] == 1
 
     def rm(self):
         """Remove database from system: i.e. delete SQLite database file"""
