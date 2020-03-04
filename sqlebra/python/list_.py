@@ -71,14 +71,14 @@ class list_(tuple_list_):
 
     def append(self, x):
         """Add an item to the end of the list. Equivalent to a[len(a):] = [x]."""
-        self._append_(x)
+        self._extend_((x, ))
 
     def extend(self, iterable):
         """Extend the list by appending all the items from the iterable. Equivalent to a[len(a):] = iterable."""
-        if isinstance(iterable, list) or isinstance(iterable, tuple) or isinstance(iterable, tuple_list_):
-            self.append(iterable)
+        if isinstance(iterable, (list, tuple, tuple_list_)):
+            self._extend_(iterable)
         else:
-            self.append([x for x in iterable])
+            self._extend_([x for x in iterable])
 
     def insert(self, i, x):
         """

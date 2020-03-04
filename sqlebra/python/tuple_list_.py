@@ -99,11 +99,11 @@ class tuple_list_(Nested):
             return self.py + other
 
     def __iadd__(self, other):
-        return self._append_(other)
+        return self._extend_(other)
 
     # tuple & list methods ----------------------------------------------------------------------
 
-    def _append_(self, x):
+    def _extend_(self, x):
         """Append is not defined for tuple, but its functionality is used by tuple."""
         # Retrieve ids of appended objects
         if isinstance(x, object_):

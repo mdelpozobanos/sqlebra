@@ -1,5 +1,6 @@
 import os
 import operator
+import copy
 import unittest
 import numpy as np
 
@@ -301,6 +302,7 @@ def test_extra_generator(py_class):
         py_v1 = list(range(0, 4))
         py_v2 = np.arange(0.0, 0.4, 0.1).tolist()
         v1 = 2
+        v2 = ['a', 'b', 'c']
         item1 = 0
         item2 = -1
         slice1 = slice(item1, item2)
@@ -309,6 +311,7 @@ def test_extra_generator(py_class):
         py_v1 = tuple(range(0, 10))
         py_v2 = tuple(np.arange(0.0, 0.4, 0.1).tolist())
         v1 = 2
+        v2 = ['a', 'b', 'c']
         item1 = 0
         item2 = -1
         slice1 = slice(item1, item2)
@@ -317,6 +320,7 @@ def test_extra_generator(py_class):
         py_v1 = {'a': 1, 'b': 1.1, 'c': True, 'd': 'val1', 'e': None}
         py_v2 = {'a': 2, 'b': 2.2, 'c': False, 'd': 'val2', 'e': None}
         v1 = 1.1
+        v2 = {'1': 1, '2': 2}
         item1 = 'a'
         item2 = 'e'
         slice1 = ('a', 'c', 'e')
@@ -377,14 +381,12 @@ def test_extra_generator(py_class):
             # Set up
             dbfile = DB(FILE, mode='w').open()
             dbfile['x1'] = py_v1
+            v1 = copy.copy(py_v1)
             x1 = dbfile['x1']
 
             try:  # Apply method
-                self.assertEqual(fcn(py_v1), fcn(x1))
-                self.assertEqual(py_v1, x1.py)
-            except:
-                self.assertEqual(fcn(py_v1), fcn(x1))
-                self.assertEqual(py_v1, x1.py)
+                self.assertEqual(fcn(v1), fcn(x1))
+                self.assertEqual(v1, x1.py)
             finally:  # Be clean
                 dbfile.rm()
 
@@ -413,15 +415,22 @@ def test_extra_generator(py_class):
     min_fcn = _fcn_x(min)
     max_fcn = _fcn_x(max)
 
-    def _fcn_v(name):
+    def _fcn_v1(name):
         def test(x):
             return x.__getattribute__(name)(v1)
         test.__name__ = name
         return test
-    count_fcn = _fcn_v('count')
-    index_fcn = _fcn_v('index')
-    append_fcn = _fcn_v('append')
-    remove_fcn = _fcn_v('remove')
+    count_fcn = _fcn_v1('count')
+    index_fcn = _fcn_v1('index')
+    append_fcn = _fcn_v1('append')
+    remove_fcn = _fcn_v1('remove')
+
+    def _fcn_v2(name):
+        def test(x):
+            return x.__getattribute__(name)(v2)
+        test.__name__ = name
+        return test
+    append_fcn2 = _fcn_v2('append')
 
     def _fcn_item(name):
         def test(x):
@@ -436,6 +445,13 @@ def test_extra_generator(py_class):
         test.__name__ = name
         return test
     insert_fcn = _fcn_item_v('insert')
+
+    def _fcn_item_v2(name):
+        def test(x):
+            return x.__getattribute__(name)(item1, v2)
+        test.__name__ = name
+        return test
+    insert_fcn2 = _fcn_item_v('insert')
 
     def _fcn_obj(name):
         def test(x):
@@ -464,7 +480,8 @@ def test_extra_generator(py_class):
     if py_class in (list, tuple):
         test_fcns = (count_fcn, index_fcn, concat_fcn, any_fcn, min_fcn, max_fcn, map_fcn)
         if py_class is list:
-            test_fcns += (iconcat_fcn, extend_fcn, append_fcn, remove_fcn, insert_fcn, pop_fcn, sort_fcn, reverse_fcn)
+            test_fcns += (iconcat_fcn, extend_fcn, append_fcn, append_fcn2, remove_fcn,
+                          insert_fcn, insert_fcn2, pop_fcn, sort_fcn, reverse_fcn)
             #, copy_fcn)
     elif py_class is dict:
         test_fcns = tuple()
