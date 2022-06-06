@@ -1,11 +1,12 @@
 import setuptools
+from sqlebra import __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="SQLebra", # Replace with your own username
-    version="0.1.2",
+    version=__version__,
     author="Marcos del Pozo Banos",
     author_email="mdelpozobanos@gmail.com",
     description="Agnostic SQL library wrapper supporting python data types",
@@ -16,12 +17,12 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "License :: Copyleft"
+        "License :: Copyleft",
         "Development Status :: 3 - Alpha",
     ],
     python_requires='>=3.6',
 )
 
 # Compile: python setup.py bdist_wheel
-# Install: python -m pip install dist/SQLebra-0.1.2-py3-none-any.whl
-# Install: python -m pip install --upgrade --force-reinstall dist/SQLebra-0.1.2-py3-none-any.whl
+# Install: python -m pip install dist/SQLebra-0.1.5-py3-none-any.whl
+# Install: python -m pip install --upgrade --force-reinstall dist/SQLebra-

@@ -1,78 +1,132 @@
 from .object_ import object_
-from .. import variables as var
 from .. import exceptions as ex
 
 
 class Single(object_):
 
-    # The following variables are defined by the inheriting class.
-    col_val = False  # Name of the column containing the value (int_val, txt_val, etc)
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    # object_
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+    # [object_] TBD
+    # ==================================================================================================================
+    # Methods/properties expected to be defined in inheriting classes
+
+    # [object_; TBD] Public interface
+    # ------------------------------------------------------------------------------------------------------------------
+    # To be used by anything and anyone
+
+    # Python values
+    # -------------
 
     @property
     def py(self):
-        return self.__getattribute__(self.col_val)
+        """Python value of the object"""
+        return getattr(self, '_' + self._value_column)  # self.__getattribute__(self.col_val)
 
     @py.setter
     def py(self, x):
-        """
-        A single object can be assigned in many ways:
+        object_.py.fset(self, x)
 
-        If x is of type Object:
-        1. If the Object is of the same class as self and is stored in the same SQL database, point self to the
-            passed SQL-object. If self was the only reference to the previous SQL-object, delete it.
-        2. Otherwise, extract the actual value from Object (i.e. Object.py) and continue with the python variable (
-            continue reading).
-
-        If x is a python variable:
-        1. If self is the only reference to the current SQL-object, overwrite its value. This is equivalent to
-            recycling the SQL-object's id.
-        2. Otherwise, create a new SQL-object with the new value and point self (and its reference) to it.
-        """
-        if isinstance(x, object_):  # Assigning an SQL object...
-            if x.pyclass != self.pyclass:  # ... of the same class
-                raise ex.TypeError("Can't assign {} to {} object".format(x.__class__.__name__, self.sqlclass))
-            if self.db == x.db:  # ... on the same SQL database
-                # If this is the only reference to the current SQL object, delete it
-                self.delete(del_ref=False)
-                self.id = x.id
-                return
-            else:  # ... of a different class or on a different SQL database
-                x = x.py
-
-        # Check type
-        if not isinstance(x, self.pyclass):
-            raise ex.TypeError("Can't assign {} to {} object".format(x.__class__.__name__, self.sqlclass))
-
-        # If this was the object's only reference (i.e. num_ref==1), update the value (easiest route)
-        if self.num_ref == 1:
-            self.db.update(self.db.tab_objs, set={self.col_val: x}, where={'id': self.id})
-        else:  # 2. Attach reference to a new id containing the new value
-            self.id = self.db.free_id()[0]
-            self.db[self.id] = x
+    # [object_; TBD] Private interface
+    # ------------------------------------------------------------------------------------------------------------------
+    # To be used by SQLebra only
 
     @classmethod
-    def value2row(cls, x):
+    def _draft_obj(cls, db_draft, value):
         """
-        :param x: Python value to be converted
-        :return: (dict) With (key, value) = (column, value) corresponding to a row in the database
-            containing the specified value.
+        Draft a value's rows from tables OBJECTS and ITEMS representing the value in the database, and returns its
+        object identifier.
+
+        Parameters
+        ----------
+        db_draft: `sqlebra.database.database.DatabaseDraft'
+            Draft object of calling database
+        value: `cls.pyclass`
+            Python value to be drafted
+
+        Returns
+        -------
+        int:
+            Unique object identifier pertaining to the drafted object. If the object is new, the identifier will be < 0.
         """
-        return {'type': cls.pyclass.__name__, cls.col_val: x}
+        objs_dict = {**cls._value2row(value), 'type': cls.pyclass.__name__}
+        # Check if object exists in table OBJECTS
+        try:
+            return db_draft._select_obj_id(objs_dict)
+        except ex.ObjectError:  # -> Object does not exist. Draft a new object
+            id = db_draft._free_id()[0]  # -> new id
+            objs_dict['id'] = id
+            db_draft._objs.append(objs_dict)
+            return id
+
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    # single
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+    # [single] TBD
+    # ==================================================================================================================
+    # Methods/properties expected to be defined in inheriting classes
+
+    pass
+
+    # [single; TBD] Public interface
+    # ------------------------------------------------------------------------------------------------------------------
+    # To be used by anything and anyone
+
+    pass
+
+    # [single; TBD] Private interface
+    # ------------------------------------------------------------------------------------------------------------------
+    # To be used by SQLebra only
+
+    _value_column = False  # Name of the column in objects table containing the value (int_val, txt_val, etc)
+
+    # [single; TBD] Protected interface
+    # ------------------------------------------------------------------------------------------------------------------
+    # To be used internally and by inheriting classes only
+
+    pass
+
+    # [single] FD
+    # ==================================================================================================================
+    # Methods/properties fully defined here. They can be overloaded by inheriting classes
+
+    # [single; FD] Public interface
+    # ------------------------------------------------------------------------------------------------------------------
+    # To be used by anything and anyone
+
+    # Casting:
+
+    def __int__(self):
+        return int(self.py)
+
+    def __float__(self):
+        return float(self.py)
+
+    # [single; FD] Private interface
+    # ------------------------------------------------------------------------------------------------------------------
+    # To be used by SQLebra only
 
     @classmethod
-    def row2value(cls, row):
-        """
-        Extracts python variable from given row
+    def _value2row(cls, x):
+        """Return dict with the value dependant keys/columns representing the variable `x` in the database.
 
-        :param row: (tuple) A row from SQL database table [values]
-        :return: Python value in the row
-        """
-        return row[var.COL_DICT[cls.col_val]]
+        Parameters
+        ----------
+        x: `cls.pyclass`
+            Python value to be converted
 
-    def __bool__(self):
-        py = self.py
-        return bool(py)
-        if py:
-            return py
-        else:
-            return False
+        Return
+        ------
+        dict
+            A dict with (key, value) = (column, value) with the value dependant part of a row in the database containing
+            `x`.
+        """
+        return {cls._value_column: x}
+
+    # [single; FD] Protected interface
+    # ------------------------------------------------------------------------------------------------------------------
+    # To be used internally and by inheriting classes only
+
+    pass

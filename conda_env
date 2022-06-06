@@ -1,0 +1,2 @@
+conda install -c conda-forge pydash
+conda install numpy
