@@ -25,7 +25,8 @@ class _Variable:
             Name of the variables as stated in the variables table.
         """
         if not name in db:
-            raise IndexError("Variable '{}' not found in {}".format(name, db.file))
+            raise NameError("Variable '{}' not found in {}".format(name, db.file))
+            # TODO need to decide on error types in SQLebra
         self.db = db
         self.name = name
         self._ref = None
