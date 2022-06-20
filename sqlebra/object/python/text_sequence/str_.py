@@ -1,4 +1,4 @@
-from collections import Iterator
+from collections.abc import Iterator
 from sqlebra.object.single import Single
 import builtins
 
