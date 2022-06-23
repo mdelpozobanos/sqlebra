@@ -257,7 +257,7 @@ class TrackedDict(dict):
         """Save all staged changes"""
         if len(args) == 0:
             args = tuple(k for k in self._editted.keys())
-        with self._dbobj.transaction():
+        with self._dbobj:
             for k in args:
                 if k not in self:
                     raise KeyError(k)
